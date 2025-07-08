@@ -1,0 +1,31 @@
+{
+    "chat_model": "microsoft/DialoGPT-medium",
+    "sentiment_model": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+    "max_length": 1000,
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "conversation_history_limit": 10,
+    "api_settings": {
+        "max_batch_size": 10,
+        "max_message_length": 500,
+        "max_prompt_length": 200
+    },
+    "models": {
+        "alternative_chat_models": [
+            "microsoft/DialoGPT-small",
+            "microsoft/DialoGPT-large",
+            "gpt2",
+            "gpt2-medium"
+        ],
+        "alternative_sentiment_models": [
+            "cardiffnlp/twitter-roberta-base-sentiment",
+            "nlptown/bert-base-multilingual-uncased-sentiment",
+            "distilbert-base-uncased-finetuned-sst-2-english"
+        ]
+    },
+    "generation_settings": {
+        "do_sample": true,
+        "no_repeat_ngram_size": 3,
+        "pad_token_id": null
+    }
+}
