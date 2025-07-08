@@ -1,0 +1,26 @@
+# WiFi Password Retrieval Tool Requirements
+
+# Core dependencies (usually pre-installed with Python)
+# subprocess - built-in
+# platform - built-in
+# re - built-in
+# os - built-in
+# argparse - built-in
+# pathlib - built-in (Python 3.4+)
+
+# Optional dependencies for advanced features
+scapy>=2.4.5
+pywifi>=1.1.12
+wifi>=0.3.8
+
+# For wireless security testing (install separately via system package manager)
+# aircrack-ng suite
+# reaver
+# wash
+# iwlist
+# netsh (Windows built-in)
+
+# Installation notes:
+# Linux: sudo apt-get install aircrack-ng reaver wireless-tools
+# macOS: brew install aircrack-ng
+# Windows: Install from official aircrack-ng website
