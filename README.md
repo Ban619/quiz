@@ -67,31 +67,54 @@ To enable email notifications for new user signups, you'll need to set up EmailJ
 3. **Template ID**: Create a new email template
 
 #### Step 3: Update the Code
-In the `script.js` file, find these lines and replace with your actual values:
+In the `script.js` file, find the EmailJS configuration section and replace with your actual values:
 
 ```javascript
-emailjs.init("YOUR_USER_ID"); // Replace with your EmailJS user ID
+// Initialize EmailJS
+emailjs.init("YOUR_USER_ID"); // Replace with your actual User ID
 
-emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+// EmailJS Configuration
+const EMAIL_CONFIG = {
+    serviceId: "service_ngbt5ss", // ✅ Already configured with your Service ID
+    templateId: "YOUR_TEMPLATE_ID", // Replace with your actual Template ID
+    userId: "YOUR_USER_ID" // Replace with your actual User ID
+};
 ```
+
+**Your Service ID is already configured!** You just need to add:
+- Your **User ID** (found in EmailJS Account settings)
+- Your **Template ID** (create a new email template)
 
 #### Step 4: Create Email Template
 In EmailJS, create an email template with these variables:
 - `{{to_name}}` - Recipient's name
 - `{{to_email}}` - Recipient's email
+- `{{user_name}}` - User's full name
+- `{{user_email}}` - User's email address
+- `{{app_name}}` - Application name
 - `{{message}}` - Welcome message
+- `{{subject}}` - Email subject
 
 Example template:
 ```
-Subject: Welcome to Quiz Master!
+Subject: {{subject}}
 
 Hello {{to_name}},
 
 {{message}}
 
+Welcome to {{app_name}}!
+
 Best regards,
 Quiz Master Team
 ```
+
+**Quick Template Setup:**
+1. Go to EmailJS Templates
+2. Create new template
+3. Use subject: `{{subject}}`
+4. Use body with the variables above
+5. Copy the Template ID to your code
 
 ## 📋 How to Use
 

@@ -1,7 +1,14 @@
 // Initialize EmailJS
 (function(){
-    emailjs.init("YOUR_USER_ID"); // Replace with your EmailJS user ID
+    emailjs.init("YOUR_USER_ID"); // Replace with your actual EmailJS User ID from your dashboard
 })();
+
+// EmailJS Configuration
+const EMAIL_CONFIG = {
+    serviceId: "service_ngbt5ss", // Your EmailJS Service ID
+    templateId: "YOUR_TEMPLATE_ID", // Replace with your actual Template ID
+    userId: "YOUR_USER_ID" // Replace with your actual User ID
+};
 
 // App State
 let currentUser = null;
@@ -113,72 +120,336 @@ function switchTab(tab) {
     }
 }
 
+// Enhanced form validation
+function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function validatePassword(password) {
+    return password.length >= 6; // Minimum 6 characters
+}
+
+function showFormError(message) {
+    // Create or update error message
+    let errorDiv = document.querySelector('.form-error');
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'form-error';
+        errorDiv.style.cssText = `
+            background: #ff416c;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: 600;
+        `;
+        document.querySelector('.login-body').insertBefore(errorDiv, document.querySelector('.form-tabs').nextSibling);
+    }
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    
+    // Hide error after 5 seconds
+    setTimeout(() => {
+        errorDiv.style.display = 'none';
+    }, 5000);
+}
+
+function showFormSuccess(message) {
+    // Create or update success message
+    let successDiv = document.querySelector('.form-success');
+    if (!successDiv) {
+        successDiv = document.createElement('div');
+        successDiv.className = 'form-success';
+        successDiv.style.cssText = `
+            background: #56ab2f;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: 600;
+        `;
+        document.querySelector('.login-body').insertBefore(successDiv, document.querySelector('.form-tabs').nextSibling);
+    }
+    successDiv.textContent = message;
+    successDiv.style.display = 'block';
+    
+    // Hide success after 3 seconds
+    setTimeout(() => {
+        successDiv.style.display = 'none';
+    }, 3000);
+}
+
 // Handle login
 document.getElementById('login-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    const email = document.getElementById('login-email').value;
+    const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
     
-    // Simple validation (in real app, this would be server-side)
-    const savedUser = localStorage.getItem('user_' + email);
+    // Client-side validation
+    if (!email) {
+        showFormError('Please enter your email address.');
+        return;
+    }
+    
+    if (!validateEmail(email)) {
+        showFormError('Please enter a valid email address.');
+        return;
+    }
+    
+    if (!password) {
+        showFormError('Please enter your password.');
+        return;
+    }
+    
+    // Check if user exists in localStorage
+    const savedUser = localStorage.getItem('user_' + email.toLowerCase());
     if (savedUser) {
         const userData = JSON.parse(savedUser);
         if (userData.password === password) {
             currentUser = userData;
+            localStorage.setItem('lastUser', JSON.stringify(userData)); // Remember user
             document.getElementById('user-name').textContent = userData.name;
-            showMainMenu();
+            showFormSuccess('Login successful! Welcome back!');
             playClickSound();
+            
+            // Delay navigation for better UX
+            setTimeout(() => {
+                showMainMenu();
+            }, 1500);
         } else {
-            alert('Invalid password!');
+            showFormError('Invalid password. Please try again.');
         }
     } else {
-        alert('User not found! Please sign up first.');
+        showFormError('Account not found. Please sign up first.');
     }
 });
 
 // Handle signup
 document.getElementById('signup-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    const name = document.getElementById('signup-name').value;
-    const email = document.getElementById('signup-email').value;
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
     const password = document.getElementById('signup-password').value;
     
+    // Client-side validation
+    if (!name) {
+        showFormError('Please enter your full name.');
+        return;
+    }
+    
+    if (name.length < 2) {
+        showFormError('Name must be at least 2 characters long.');
+        return;
+    }
+    
+    if (!email) {
+        showFormError('Please enter your email address.');
+        return;
+    }
+    
+    if (!validateEmail(email)) {
+        showFormError('Please enter a valid email address.');
+        return;
+    }
+    
+    if (!password) {
+        showFormError('Please enter a password.');
+        return;
+    }
+    
+    if (!validatePassword(password)) {
+        showFormError('Password must be at least 6 characters long.');
+        return;
+    }
+    
+    // Check if user already exists
+    const existingUser = localStorage.getItem('user_' + email.toLowerCase());
+    if (existingUser) {
+        showFormError('An account with this email already exists. Please login instead.');
+        return;
+    }
+    
     // Save user data
-    const userData = { name, email, password };
-    localStorage.setItem('user_' + email, JSON.stringify(userData));
+    const userData = { 
+        name, 
+        email: email.toLowerCase(), 
+        password,
+        dateCreated: new Date().toISOString(),
+        quizzesTaken: 0,
+        bestScore: 0
+    };
+    
+    localStorage.setItem('user_' + email.toLowerCase(), JSON.stringify(userData));
+    localStorage.setItem('lastUser', JSON.stringify(userData)); // Remember user
     currentUser = userData;
+    
+    // Show success message
+    showFormSuccess('Account created successfully! Welcome to Quiz Master!');
+    playClickSound();
     
     // Send welcome email
     sendWelcomeEmail(name, email);
     
     document.getElementById('user-name').textContent = name;
-    showMainMenu();
-    playClickSound();
+    
+    // Delay navigation for better UX
+    setTimeout(() => {
+        showMainMenu();
+    }, 2000);
 });
 
 // Send welcome email using EmailJS
 function sendWelcomeEmail(name, email) {
+    // Prepare email template parameters
     const templateParams = {
         to_name: name,
         to_email: email,
-        message: `Welcome to Quiz Master! We're excited to have you join our community of quiz enthusiasts. Start creating and taking quizzes today!`
+        user_name: name,
+        user_email: email,
+        app_name: "Quiz Master",
+        message: `Welcome to Quiz Master! We're excited to have you join our community of quiz enthusiasts. 
+
+Here's what you can do:
+• Take interactive quizzes with multiple question types
+• Create your own custom questions
+• Track your progress and scores
+• Export and share your questions
+
+Start your quiz journey today and test your knowledge!
+
+Best regards,
+The Quiz Master Team`,
+        subject: "Welcome to Quiz Master - Let's Start Learning!"
     };
 
-    // Note: You'll need to replace these with your actual EmailJS service details
-    emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+    // Check if EmailJS is properly configured
+    if (EMAIL_CONFIG.templateId === 'YOUR_TEMPLATE_ID' || EMAIL_CONFIG.userId === 'YOUR_USER_ID') {
+        console.log('EmailJS not fully configured. Email not sent.');
+        console.log('Template params that would be sent:', templateParams);
+        showNotification('Account created! Email service needs configuration.', 'info');
+        return;
+    }
+
+    // Send email using EmailJS
+    emailjs.send(EMAIL_CONFIG.serviceId, EMAIL_CONFIG.templateId, templateParams)
         .then(function(response) {
             console.log('Welcome email sent successfully!', response.status, response.text);
-            alert('Welcome! A confirmation email has been sent to your inbox.');
-        }, function(error) {
+            showNotification('Welcome email sent! Check your inbox.', 'success');
+        })
+        .catch(function(error) {
             console.log('Failed to send email:', error);
-            alert('Account created successfully! (Email service not configured)');
+            showNotification('Account created! (Email delivery failed)', 'warning');
         });
 }
+
+// Enhanced notification system
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    
+    // Set styles based on type
+    let backgroundColor, borderColor;
+    switch(type) {
+        case 'success':
+            backgroundColor = '#56ab2f';
+            borderColor = '#4a9626';
+            break;
+        case 'error':
+            backgroundColor = '#ff416c';
+            borderColor = '#e03456';
+            break;
+        case 'warning':
+            backgroundColor = '#ff9500';
+            borderColor = '#e6850d';
+            break;
+        default: // info
+            backgroundColor = '#4facfe';
+            borderColor = '#3d8bfe';
+    }
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${backgroundColor};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        border-left: 4px solid ${borderColor};
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-weight: 600;
+        max-width: 350px;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    }, 5000);
+}
+
+// Add CSS for notification animations
+const notificationStyles = document.createElement('style');
+notificationStyles.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(notificationStyles);
 
 // Navigation functions
 function showMainMenu() {
     hideAllScreens();
     document.getElementById('main-menu-screen').classList.remove('hidden');
+    
+    // Update user statistics display
+    if (currentUser) {
+        const userNameElement = document.getElementById('user-name');
+        const statsHtml = `
+            ${currentUser.name}
+            <br>
+            <small style="color: #999; font-size: 0.8em;">
+                Quizzes taken: ${currentUser.quizzesTaken || 0} | 
+                Best Score: ${currentUser.bestScore || 0}%
+            </small>
+        `;
+        userNameElement.innerHTML = statsHtml;
+    }
 }
 
 function showQuizStart() {
@@ -209,7 +480,30 @@ function hideAllScreens() {
 }
 
 function logout() {
+    if (currentUser) {
+        showNotification(`Goodbye, ${currentUser.name}! Thanks for using Quiz Master.`, 'info');
+    }
+    
+    // Clear current user data
     currentUser = null;
+    localStorage.removeItem('lastUser');
+    
+    // Reset form fields
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
+    document.getElementById('signup-name').value = '';
+    document.getElementById('signup-email').value = '';
+    document.getElementById('signup-password').value = '';
+    
+    // Hide any error/success messages
+    const errorDiv = document.querySelector('.form-error');
+    const successDiv = document.querySelector('.form-success');
+    if (errorDiv) errorDiv.style.display = 'none';
+    if (successDiv) successDiv.style.display = 'none';
+    
+    // Switch to login tab
+    switchTab('login');
+    
     hideAllScreens();
     document.getElementById('login-screen').classList.remove('hidden');
     playClickSound();
@@ -530,6 +824,21 @@ function showResults() {
                 break;
         }
     });
+    
+    // Update user statistics if logged in
+    if (currentUser) {
+        const percentage = Math.round((score / quizData.length) * 100);
+        currentUser.quizzesTaken = (currentUser.quizzesTaken || 0) + 1;
+        
+        if (percentage > (currentUser.bestScore || 0)) {
+            currentUser.bestScore = percentage;
+            showNotification(`New personal best: ${percentage}%! 🎉`, 'success');
+        }
+        
+        // Save updated user data
+        localStorage.setItem('user_' + currentUser.email.toLowerCase(), JSON.stringify(currentUser));
+        localStorage.setItem('lastUser', JSON.stringify(currentUser));
+    }
     
     hideAllScreens();
     document.getElementById('results-screen').classList.remove('hidden');
