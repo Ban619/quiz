@@ -38,11 +38,19 @@ A modern, fully-featured quiz application with user authentication, multiple que
 - **Modern UI**: Beautiful gradients, animations, and smooth transitions
 - **Accessibility**: Keyboard navigation and screen reader friendly
 
-## 🚀 Getting Started
+## � File Structure
+
+The application is organized into three separate files for better maintainability:
+
+- **`index.html`** - Main HTML structure with all screens and forms
+- **`style.css`** - Complete styling and responsive design
+- **`script.js`** - All JavaScript functionality and logic
+
+## �🚀 Getting Started
 
 ### 1. Download & Setup
-1. Save the `index.html` file to your computer
-2. Open it in any modern web browser (Chrome, Firefox, Safari, Edge)
+1. Save all three files (`index.html`, `style.css`, `script.js`) to the same directory
+2. Open `index.html` in any modern web browser (Chrome, Firefox, Safari, Edge)
 
 ### 2. Email Configuration (Optional but Recommended)
 
@@ -59,7 +67,7 @@ To enable email notifications for new user signups, you'll need to set up EmailJ
 3. **Template ID**: Create a new email template
 
 #### Step 3: Update the Code
-In the `index.html` file, find these lines and replace with your actual values:
+In the `script.js` file, find these lines and replace with your actual values:
 
 ```javascript
 emailjs.init("YOUR_USER_ID"); // Replace with your EmailJS user ID
@@ -144,7 +152,7 @@ Quiz Master Team
 ## 🔧 Customization
 
 ### Adding More Default Questions
-Edit the `quizData` array in the JavaScript section:
+Edit the `quizData` array in `script.js`:
 
 ```javascript
 {
@@ -156,11 +164,17 @@ Edit the `quizData` array in the JavaScript section:
 ```
 
 ### Styling Customization
-Modify the CSS section to change:
+Modify `style.css` to change:
 - Colors and gradients
 - Fonts and sizes
 - Animation speeds
 - Layout and spacing
+
+### Structure Customization
+Modify `index.html` to:
+- Add new screens or sections
+- Change form layouts
+- Update content and text
 
 ## 🛠️ Technical Details
 
